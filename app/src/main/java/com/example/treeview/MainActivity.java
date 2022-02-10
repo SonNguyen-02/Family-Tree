@@ -30,11 +30,13 @@ import com.example.treeview.adapter.GraphAdapter;
 import com.example.treeview.model.MultiplePeople;
 import com.example.treeview.model.People;
 
+import org.jetbrains.annotations.Contract;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Random;
 
 import dev.bandb.graphview.graph.Graph;
 import dev.bandb.graphview.graph.Node;
@@ -50,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        rcvFamilyTree = findViewById(R.id.rcv_family_tree);
-        setUpGraphView();
+        initData();
     }
 
-    private void setUpGraphView() {
+    private void initData() {
+        rcvFamilyTree = findViewById(R.id.rcv_family_tree);
 
         BuchheimWalkerConfiguration configuration = new BuchheimWalkerConfiguration.Builder()
                 .setSiblingSeparation(100)
@@ -67,103 +69,85 @@ public class MainActivity extends AppCompatActivity {
 
         rcvFamilyTree.addItemDecoration(new CustomTreeEdgeDecoration());
 
-        Graph graph = new Graph();
-
-        // level 1
-        MultiplePeople couple1 = new MultiplePeople(new People("King IV", "", R.drawable.test_image, People.MALE),
-                new People("Queen elizabeth", "The queen mother", R.drawable.test_image, People.FEMALE, false));
-        Node node1 = new Node(couple1);
-
-        // level 2
-        MultiplePeople couple2 = new MultiplePeople(new People("Prince Philip", "Duck of Edin", R.drawable.test_image, People.MALE, false),
-                new People("Queen elizabeth II", "", R.drawable.test_image, People.FEMALE));
-        Node node2 = new Node(couple2);
-        Node node3 = new Node(new People("Princess margaret", "", R.drawable.test_image, People.FEMALE));
-
-        // level 3
-        MultiplePeople couple3 = new MultiplePeople(
-                new People("Camila", "Duchess of Cornwall", R.drawable.test_image, People.FEMALE, false),
-                new People("Charles", "Prince of Wales", R.drawable.test_image, People.MALE),
-                new People("Diana", "Princess of Wales", R.drawable.test_image, People.FEMALE, false));
-        Node node4 = new Node(couple3);
-        Node node5 = new Node(new People("Anne", "Princess Royal", R.drawable.test_image, People.FEMALE));
-        Node node6 = new Node(new People("Prince Andrew", "Duck of York", R.drawable.test_image, People.MALE));
-        Node node7 = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-
-        // level 4
-//        Node node8 = new Node(new People("Prince Rook", "", R.drawable.test_image, People.MALE, true, "Charles", "Camila"));
-        MultiplePeople couple11 = new MultiplePeople(new People("Prince Rook", "", R.drawable.test_image, People.MALE, true, "Charles", "Camila"),
-                new People("Queen elizabeth II", "", R.drawable.test_image, People.FEMALE, false));
-        Node node8 = new Node(couple11);
-        Node node8a = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-        Node node8b = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-        Node node8c = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-
-        MultiplePeople couple4 = new MultiplePeople(new People("Catherine", "Duchess of Cambridge", R.drawable.test_image, People.FEMALE, false),
-                new People("Prince William", "Duchess of Cambridge", R.drawable.test_image, People.MALE, true, "Charles", "Diana"));
-        Node node9 = new Node(couple4);
-
-        MultiplePeople couple5 = new MultiplePeople(new People("Prince Harry", "", R.drawable.test_image, People.MALE, true, "Charles", "Diana"),
-                new People("Meghan Markle", "", R.drawable.test_image, People.FEMALE, false));
-        Node node10 = new Node(couple5);
-        Node node10a = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-        Node node10b = new Node(new People("Prince Edward", "Earl of Wessex", R.drawable.test_image, People.MALE));
-
-        // level 5
-        Node node11 = new Node(new People("Prince George of Cambridge", "", R.drawable.test_image, People.MALE));
-        Node node12 = new Node(new People("Prince Charlotte of Cambridge", "", R.drawable.test_image, People.FEMALE));
-        Node node13 = new Node(new People("Prince Louis of Cambridge", "", R.drawable.test_image, People.MALE));
-
-        // them
-        MultiplePeople couple6 = new MultiplePeople(new People("Catherine", "Duchess of Cambridge", R.drawable.test_image, People.FEMALE, false),
-                new People("Prince William", "Duchess of Cambridge", R.drawable.test_image, People.MALE, true, "Charles", "Diana"));
-        Node node14 = new Node(couple6);
-        MultiplePeople couple7 = new MultiplePeople(new People("Prince Harry", "", R.drawable.test_image, People.MALE, true, "Charles", "Diana"),
-                new People("Meghan Markle", "", R.drawable.test_image, People.FEMALE, false));
-        Node node15 = new Node(couple7);
-
-        MultiplePeople couple8 = new MultiplePeople(
-                new People("Camila", "Duchess of Cornwall", R.drawable.test_image, People.FEMALE, false),
-                new People("Charles", "Prince of Wales", R.drawable.test_image, People.MALE),
-                new People("Diana", "Princess of Wales", R.drawable.test_image, People.FEMALE, false));
-        Node node16 = new Node(couple8);
-
-        MultiplePeople couple9 = new MultiplePeople(new People("Prince Harry", "", R.drawable.test_image, People.MALE, true, "Charles", "Diana"),
-                new People("Meghan Markle", "", R.drawable.test_image, People.FEMALE, false));
-        Node node17 = new Node(couple9);
-
-        MultiplePeople couple10 = new MultiplePeople(new People("Catherine", "Duchess of Cambridge", R.drawable.test_image, People.FEMALE, false),
-                new People("Prince William", "Duchess of Cambridge", R.drawable.test_image, People.MALE, true, "Charles", "Diana"));
-        Node node18 = new Node(couple10);
-
-        graph.addEdge(node1, node2);
-        graph.addEdge(node1, node3);
-        graph.addEdge(node2, node4);
-        graph.addEdge(node2, node5);
-        graph.addEdge(node2, node14);
-        graph.addEdge(node14, node16);
-        graph.addEdge(node16, node18);
-
-        graph.addEdge(node2, node6);
-        graph.addEdge(node2, node15);
-        graph.addEdge(node15, node17);
-        graph.addEdge(node2, node7);
-
-        graph.addEdge(node4, node8);
-        graph.addEdge(node8, node8a);
-        graph.addEdge(node8, node8b);
-        graph.addEdge(node8, node8c);
-        graph.addEdge(node4, node9);
-        graph.addEdge(node4, node10);
-        graph.addEdge(node10, node10a);
-        graph.addEdge(node10, node10b);
-        graph.addEdge(node9, node11);
-        graph.addEdge(node9, node12);
-        graph.addEdge(node9, node13);
 
         GraphAdapter adapter = new GraphAdapter(this);
-        adapter.submitGraph(graph);
+        adapter.submitGraph(getGraph());
         rcvFamilyTree.setAdapter(adapter);
+    }
+
+    @NonNull
+    private Graph getGraph() {
+        Graph graph = new Graph();
+
+        MultiplePeople rootFamily = new MultiplePeople(
+                new People("King IV", "", R.drawable.test_image, People.MALE),
+                new People("Queen elizabeth", "The queen mother", R.drawable.test_image, People.FEMALE, false));
+
+        graph.addNode(new Node(rootFamily));
+
+        int i = 0;
+        Random random = new Random();
+        while (i <= 30) {
+            Node node = graph.getNodeAtPosition(i);
+            if (node.getData() instanceof MultiplePeople) {
+                switch (random.nextInt(5)) {
+                    case 0:
+                        graph.addEdge(node, new Node(getCouple()));
+                        graph.addEdge(node, new Node(getPeople()));
+                        graph.addEdge(node, new Node(getCouple()));
+                        break;
+                    case 1:
+                        graph.addEdge(node, new Node(getPeople()));
+                        graph.addEdge(node, new Node(getCouple()));
+                        break;
+                    case 2:
+                        graph.addEdge(node, new Node(getPeople()));
+                        graph.addEdge(node, new Node(getCouple()));
+                        graph.addEdge(node, new Node(getPeople()));
+                        graph.addEdge(node, new Node(getPeople()));
+                        break;
+                    case 3:
+                        graph.addEdge(node, new Node(getTrip()));
+                        graph.addEdge(node, new Node(getPeople()));
+                        graph.addEdge(node, new Node(getPeople()));
+                        break;
+                    case 4:
+                        graph.addEdge(node, new Node(getTrip()));
+                        graph.addEdge(node, new Node(getCouple()));
+                        break;
+                }
+            }
+            i++;
+        }
+        return graph;
+    }
+
+    @NonNull
+    @Contract(value = " -> new", pure = true)
+    private People getPeople() {
+        return new People("Prince agar", "Prince of Wales", R.drawable.test_image, People.MALE, true, "Charles", "Diana");
+    }
+
+    @NonNull
+    @Contract(" -> new")
+    private MultiplePeople getCouple() {
+        if (new Random().nextBoolean()) {
+            return new MultiplePeople(
+                    new People("Prince Philip", "Prince of Wales", R.drawable.test_image, People.MALE, false),
+                    new People("Queen elizabeth II", "Duck of Edin", R.drawable.test_image, People.FEMALE));
+        }
+        return new MultiplePeople(
+                new People("Prince Philip", "Prince of Wales", R.drawable.test_image, People.MALE),
+                new People("Queen elizabeth II", "Duck of Edin", R.drawable.test_image, People.FEMALE, false));
+    }
+
+    @NonNull
+    @Contract(" -> new")
+    private MultiplePeople getTrip() {
+        return new MultiplePeople(
+                new People("Camila", "Duchess of Cornwall", R.drawable.test_image, People.FEMALE, false),
+                new People("Charles", "Prince of Wales", R.drawable.test_image, People.MALE),
+                new People("Diana", "Princess of Wales", R.drawable.test_image, People.FEMALE, false));
     }
 
     private void askPermission() {
@@ -261,6 +245,11 @@ public class MainActivity extends AppCompatActivity {
                             askPermission();
                         }
                     }).show();
+        }
+        if (item.getItemId() == R.id.menu_rand_family) {
+            GraphAdapter adapter = new GraphAdapter(this);
+            adapter.submitGraph(getGraph());
+            rcvFamilyTree.setAdapter(adapter);
         }
         return super.onOptionsItemSelected(item);
     }
