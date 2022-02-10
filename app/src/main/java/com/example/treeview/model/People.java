@@ -11,17 +11,25 @@ public class People {
     private int image;
     private int gender;
     private final boolean isOffspring;
+    private final String fatherName;
+    private final String motherName;
 
     public People(String name, String description, int image, int gender) {
         this(name, description, image, gender, true);
     }
 
     public People(String name, String description, int image, int gender, boolean isOffspring) {
+        this(name, description, image, gender, isOffspring, null, null);
+    }
+
+    public People(String name, String description, int image, int gender, boolean isOffspring, String fatherName, String motherName) {
         this.name = name;
         this.description = description;
         this.image = image;
         this.gender = gender;
         this.isOffspring = isOffspring;
+        this.fatherName = fatherName;
+        this.motherName = motherName;
     }
 
     public String getName() {
@@ -58,5 +66,13 @@ public class People {
 
     public boolean isOffspring() {
         return isOffspring;
+    }
+
+    public String getFatherName() {
+        return fatherName;
+    }
+
+    public String getMotherName() {
+        return motherName;
     }
 }

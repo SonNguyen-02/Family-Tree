@@ -1,5 +1,6 @@
 package com.example.treeview.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,20 +8,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.treeview.R;
-import com.example.treeview.model.Couple;
+import com.example.treeview.model.MultiplePeople;
 import com.example.treeview.model.People;
-
-import java.util.Objects;
 
 import dev.bandb.graphview.AbstractGraphAdapter;
 
 public class GraphAdapter extends AbstractGraphAdapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_PEOPLE = 0;
-    private static final int TYPE_COUPLE = 1;
+    private static final int TYPE_MULTIPLE_PEOPLE = 1;
+
+    private final Context mContext;
+
+    public GraphAdapter(Context mContext) {
+        this.mContext = mContext;
+    }
 
     @NonNull
     @Override
@@ -29,8 +35,8 @@ public class GraphAdapter extends AbstractGraphAdapter<RecyclerView.ViewHolder> 
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.people_node, parent, false);
             return new PeopleNodeViewHolder(view);
         } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.couple_node, parent, false);
-            return new CoupleNodeViewHolder(view);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.multiple_people_node, parent, false);
+            return new MultiplePeopleNodeViewHolder(view);
         }
     }
 
@@ -49,26 +55,12 @@ public class GraphAdapter extends AbstractGraphAdapter<RecyclerView.ViewHolder> 
             }
             vh.imgAvatar.setImageResource(people.getImage());
         }
-        if (holder instanceof CoupleNodeViewHolder && getNodeData(position) instanceof Couple) {
-            CoupleNodeViewHolder vh = (CoupleNodeViewHolder) holder;
-            Couple couple = (Couple) getNodeData(position);
-            if (couple == null) {
-                return;
-            }
-            vh.tvNameHusband.setText(couple.getHusband().getName());
-            if (couple.getHusband().getDescription() != null && !couple.getHusband().getDescription().isEmpty()) {
-                vh.tvDescriptionHusband.setVisibility(View.VISIBLE);
-                vh.tvDescriptionHusband.setText(couple.getHusband().getDescription());
-            }
-
-            vh.imgAvatarHusband.setImageResource(couple.getHusband().getImage());
-
-            vh.tvNameWife.setText(couple.getWife().getName());
-            if (couple.getWife().getDescription() != null && !couple.getWife().getDescription().isEmpty()) {
-                vh.tvDescriptionWife.setVisibility(View.VISIBLE);
-                vh.tvDescriptionWife.setText(couple.getWife().getDescription());
-            }
-            vh.imgAvatarWife.setImageResource(couple.getWife().getImage());
+        if (holder instanceof MultiplePeopleNodeViewHolder && getNodeData(position) instanceof MultiplePeople) {
+            MultiplePeopleNodeViewHolder vh = (MultiplePeopleNodeViewHolder) holder;
+            MultiplePeopleAdapter adapter = new MultiplePeopleAdapter((MultiplePeople) getNodeData(position));
+            vh.rcvMultiplePeople.setAdapter(adapter);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
+            vh.rcvMultiplePeople.setLayoutManager(layoutManager);
         }
     }
 
@@ -77,10 +69,10 @@ public class GraphAdapter extends AbstractGraphAdapter<RecyclerView.ViewHolder> 
         if (getNodeData(position) instanceof People) {
             return TYPE_PEOPLE;
         }
-        return TYPE_COUPLE;
+        return TYPE_MULTIPLE_PEOPLE;
     }
 
-    static class PeopleNodeViewHolder extends RecyclerView.ViewHolder {
+    public static class PeopleNodeViewHolder extends RecyclerView.ViewHolder {
 
         ImageView imgAvatar;
         TextView tvName, tvDescription;
@@ -93,21 +85,14 @@ public class GraphAdapter extends AbstractGraphAdapter<RecyclerView.ViewHolder> 
         }
     }
 
-    static class CoupleNodeViewHolder extends RecyclerView.ViewHolder {
+    static class MultiplePeopleNodeViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView imgAvatarHusband, imgAvatarWife;
-        TextView tvNameHusband, tvNameWife, tvDescriptionHusband, tvDescriptionWife;
+        RecyclerView rcvMultiplePeople;
 
-        public CoupleNodeViewHolder(@NonNull View itemView) {
+        public MultiplePeopleNodeViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgAvatarHusband = itemView.findViewById(R.id.iv_avatar_husband);
-            imgAvatarWife = itemView.findViewById(R.id.iv_avatar_wife);
-            tvNameHusband = itemView.findViewById(R.id.tv_name_husband);
-            tvNameWife = itemView.findViewById(R.id.tv_name_wife);
-            tvDescriptionHusband = itemView.findViewById(R.id.tv_desc_husband);
-            tvDescriptionWife = itemView.findViewById(R.id.tv_desc_wife);
+            rcvMultiplePeople = itemView.findViewById(R.id.rcv_multiple_people);
         }
     }
-
 
 }

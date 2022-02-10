@@ -12,7 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import com.example.treeview.R;
-import com.example.treeview.model.Couple;
+import com.example.treeview.model.MultiplePeople;
+import com.example.treeview.model.People;
 
 import java.util.List;
 
@@ -54,55 +55,81 @@ public class CustomTreeEdgeDecoration extends RecyclerView.ItemDecoration {
             throw new RuntimeException("TreeEdgeDecoration only works with ${BuchheimWalkerLayoutManager::class.simpleName}");
         }
 
-        float offsetX = parent.getContext().getResources().getDimension(R.dimen.max_size_node) / 2;
-        float offsetY = parent.getContext().getResources().getDimension(R.dimen.line_offset);
+        float nodeSize = parent.getContext().getResources().getDimension(R.dimen.max_size_node);
+        float avatarRadius = parent.getContext().getResources().getDimension(R.dimen.avatar_size) / 2f;
+        float space = (nodeSize - avatarRadius * 2) / 2f;
 
         BuchheimWalkerConfiguration configuration = ((BuchheimWalkerLayoutManager) layout).getConfiguration();
         Graph graph = ((AbstractGraphAdapter<?>) adapter).getGraph();
         if (graph != null && graph.hasNodes()) {
             List<Node> nodes = graph.getNodes();
             for (Node node : nodes) {
+                if (node.getData() instanceof MultiplePeople) {
+                    MultiplePeople multiplePeople = (MultiplePeople) node.getData();
+                    linePath.reset();
+                    for (int i = 1; i < multiplePeople.size(); i++) {
+                        float startX = node.getX() + i * nodeSize - space;
+                        float startY = node.getY() + avatarRadius;
+                        linePath.moveTo(startX, startY);
+                        linePath.lineTo(startX + 2 * space, startY);
+                    }
+                    c.drawPath(linePath, linePaint);
+                }
                 List<Node> children = graph.successorsOf(node);
                 for (Node child : children) {
                     Log.e("ddd", "onDraw: node: " + child.getData());
                     linePath.reset();
-                    float x;
-                    if (child.getData() instanceof Couple) {
-                        if ((((Couple) child.getData()).getHusband().isOffspring())) {
-                            x = child.getX() + offsetX;
-                        } else {
-                            x = child.getX() + child.getWidth() - offsetX;
+                    float startX = 0;
+                    if (child.getData() instanceof MultiplePeople) {
+                        MultiplePeople multiplePeople = (MultiplePeople) child.getData();
+                        for (int i = 0; i < multiplePeople.size(); i++) {
+                            if (multiplePeople.get(i).isOffspring()) {
+                                startX = child.getX() + (i + 1) * nodeSize - nodeSize / 2f;
+                                break;
+                            }
                         }
+                        startX = startX == 0 ? child.getX() + child.getWidth() / 2f : startX;
                     } else {
-                        x = child.getX() + child.getWidth() / 2f;
+                        startX = child.getX() + child.getWidth() / 2f;
                     }
-                    linePath.moveTo(x, child.getY());
-                    Log.e("ddd", "onDraw: move 1: " + x + " | " + child.getY());
+                    linePath.moveTo(startX, child.getY());
                     // draws a line from the child's middle-top halfway up to its parent
-                    linePath.lineTo(x, child.getY() - configuration.getLevelSeparation() / 2f);
-                    Log.e("ddd", "onDraw: line 1: " + x + " | " + (child.getY() - configuration.getLevelSeparation() / 2f));
+                    linePath.lineTo(startX, child.getY() - configuration.getLevelSeparation() / 2f);
 
-                    // draws a line from the previous point to the middle of the parents width
-                    linePath.lineTo(
-                            node.getX() + node.getWidth() / 2f,
-                            child.getY() - configuration.getLevelSeparation() / 2f
-                    );
-                    Log.e("ddd", "onDraw: line 2: " + (node.getX() + node.getWidth() / 2f) + " | " + (child.getY() - configuration.getLevelSeparation() / 2f));
-
-                    // position at the middle of the level separation under the parent
-                    linePath.moveTo(
-                            node.getX() + node.getWidth() / 2f,
-                            child.getY() - configuration.getLevelSeparation() / 2f
-                    );
-                    Log.e("ddd", "onDraw: move 2: " + (node.getX() + node.getWidth() / 2f) + " | " + (child.getY() - configuration.getLevelSeparation() / 2f));
-
-                    // draws a line up to the parents middle-bottom
-                    if (node.getData() instanceof Couple) {
-                        linePath.lineTo(node.getX() + node.getWidth() / 2f, node.getY() + offsetY);
-                    }else{
-                        linePath.lineTo(node.getX() + node.getWidth() / 2f, node.getY() + node.getHeight());
+                    float endX = node.getX() + node.getWidth() / 2f, endY;
+                    if (node.getData() instanceof MultiplePeople) {
+                        MultiplePeople multiplePeople = (MultiplePeople) node.getData();
+                        if (multiplePeople.getListPeople().size() == 3) {
+                            People offspring = null;
+                            if (child.getData() instanceof MultiplePeople) {
+                                for (int i = 0; i < ((MultiplePeople) child.getData()).size(); i++) {
+                                    if (((MultiplePeople) child.getData()).get(i).isOffspring()) {
+                                        offspring = ((MultiplePeople) child.getData()).get(i);
+                                    }
+                                }
+                            } else {
+                                offspring = (People) child.getData();
+                            }
+                            if (offspring != null) {
+                                if (multiplePeople.get(0).getName().equals(offspring.getFatherName())
+                                        || multiplePeople.get(0).getName().equals(offspring.getMotherName())) {
+                                    endX = node.getX() + nodeSize;
+                                } else {
+                                    endX = node.getX() + 2 * nodeSize;
+                                }
+                            }
+                        }
+                        endY = node.getY() + avatarRadius;
+                    } else {
+                        endY = node.getY() + node.getHeight();
                     }
-                    Log.e("ddd", "onDraw: move 3: " + (node.getX() + node.getWidth() / 2f) + " | " + (node.getY() + node.getHeight()));
+                    // draws a line from the previous point to the middle of the parents width
+                    linePath.lineTo(endX, child.getY() - configuration.getLevelSeparation() / 2f);
+                    // position at the middle of the level separation under the parent
+                    linePath.moveTo(endX, child.getY() - configuration.getLevelSeparation() / 2f);
+                    // draws a line up to the parents middle-bottom
+                    linePath.lineTo(endX, endY);
+
                     c.drawPath(linePath, linePaint);
                 }
             }
