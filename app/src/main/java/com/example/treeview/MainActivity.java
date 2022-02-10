@@ -8,13 +8,17 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,11 +29,12 @@ import com.example.treeview.adapter.CustomTreeEdgeDecoration;
 import com.example.treeview.adapter.GraphAdapter;
 import com.example.treeview.model.MultiplePeople;
 import com.example.treeview.model.People;
-import com.otaliastudios.zoom.ZoomLayout;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import dev.bandb.graphview.graph.Graph;
 import dev.bandb.graphview.graph.Node;
@@ -169,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                saveImage(rcvFamilyTree);
+                saveImage(getBitmapFromView(rcvFamilyTree), this, "TreeView");
             } else {
                 Toast.makeText(this, "Permission is denied!", Toast.LENGTH_SHORT).show();
             }
@@ -177,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public void saveImage(@NonNull View view) {
+    public Bitmap getBitmapFromView(@NonNull View view) {
         Log.e("ddd", "saveImage: " + view.getLeft() + " | " + view.getTop() + " | " + view.getRight() + " | " + view.getBottom());
         Bitmap bm = Bitmap.createBitmap(view.getRight(), view.getBottom(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bm);
@@ -187,18 +192,54 @@ public class MainActivity extends AppCompatActivity {
         else
             canvas.drawColor(Color.WHITE);
         view.draw(canvas);
-        File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/SaveImage");
-        if (!dir.exists()) {
-            dir.mkdir();
+        return bm;
+    }
+
+    private void saveImage(Bitmap bitmap, Context context, String folderName) {
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/" + folderName);
+            values.put(MediaStore.Images.Media.IS_PENDING, true);
+            // RELATIVE_PATH and IS_PENDING are introduced in API 29.
+            Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try {
+                    saveImageToStream(bitmap, context.getContentResolver().openOutputStream(uri));
+                    values.put(MediaStore.Images.Media.IS_PENDING, false);
+                    context.getContentResolver().update(uri, values, null, null);
+                    Toast.makeText(this, "Successfully saved", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(this, "Save Error!!", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            File directory = new File(Environment.getExternalStorageDirectory().toString() + "/" + folderName);
+            // getExternalStorageDirectory is deprecated in API 29
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+            String fileName = System.currentTimeMillis() + ".png";
+            File file = new File(directory, fileName);
+            try {
+                saveImageToStream(bitmap, new FileOutputStream(file));
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, file.getAbsolutePath());
+                // .DATA is deprecated in API 29
+                context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                Toast.makeText(this, "Successfully saved", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                Toast.makeText(this, "Save Error!!", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
         }
-        File file = new File(dir, System.currentTimeMillis() + ".png");
-        try (FileOutputStream fout = new FileOutputStream(file)) {
-            bm.compress(Bitmap.CompressFormat.PNG, 100, fout);
-            Toast.makeText(this, "Successfully saved", Toast.LENGTH_SHORT).show();
-            fout.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Save Error!!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveImageToStream(Bitmap bitmap, OutputStream outputStream) throws IOException {
+        if (outputStream != null) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.flush();
+            outputStream.close();
         }
     }
 
@@ -215,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
                     .setPositiveButton("OK", (dialogInterface, i) -> {
                         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            saveImage(rcvFamilyTree);
+                            saveImage(getBitmapFromView(rcvFamilyTree), this, "TreeView");
                         } else {
                             askPermission();
                         }
