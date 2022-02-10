@@ -77,7 +77,7 @@ public class CustomTreeEdgeDecoration extends RecyclerView.ItemDecoration {
                 }
                 List<Node> children = graph.successorsOf(node);
                 for (Node child : children) {
-                    Log.e("ddd", "onDraw: node: " + child.getData());
+//                    Log.e("ddd", "onDraw: node: " + child.getData());
                     linePath.reset();
                     float startX = 0;
                     if (child.getData() instanceof MultiplePeople) {

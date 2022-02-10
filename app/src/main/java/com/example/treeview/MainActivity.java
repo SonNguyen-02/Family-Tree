@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,18 +39,17 @@ import dev.bandb.graphview.layouts.tree.BuchheimWalkerLayoutManager;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 1;
-    private ZoomLayout zoomLayout;
+    private RecyclerView rcvFamilyTree;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rcvFamilyTree = findViewById(R.id.rcv_family_tree);
         setUpGraphView();
-        zoomLayout = findViewById(R.id.zoom_layout);
     }
 
     private void setUpGraphView() {
-        RecyclerView rcvGraphView = findViewById(R.id.recycler);
 
         BuchheimWalkerConfiguration configuration = new BuchheimWalkerConfiguration.Builder()
                 .setSiblingSeparation(100)
@@ -58,9 +58,9 @@ public class MainActivity extends AppCompatActivity {
                 .setOrientation(BuchheimWalkerConfiguration.ORIENTATION_TOP_BOTTOM)
                 .build();
 
-        rcvGraphView.setLayoutManager(new BuchheimWalkerLayoutManager(this, configuration));
+        rcvFamilyTree.setLayoutManager(new BuchheimWalkerLayoutManager(this, configuration));
 
-        rcvGraphView.addItemDecoration(new CustomTreeEdgeDecoration());
+        rcvFamilyTree.addItemDecoration(new CustomTreeEdgeDecoration());
 
         Graph graph = new Graph();
 
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         GraphAdapter adapter = new GraphAdapter(this);
         adapter.submitGraph(graph);
-        rcvGraphView.setAdapter(adapter);
+        rcvFamilyTree.setAdapter(adapter);
     }
 
     private void askPermission() {
@@ -169,8 +169,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                zoomLayout.zoomTo(1, false);
-                saveImage(zoomLayout);
+                saveImage(rcvFamilyTree);
             } else {
                 Toast.makeText(this, "Permission is denied!", Toast.LENGTH_SHORT).show();
             }
@@ -179,8 +178,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveImage(@NonNull View view) {
-        view.setDrawingCacheEnabled(true);
-        Bitmap bm = view.getDrawingCache();
+        Log.e("ddd", "saveImage: " + view.getLeft() + " | " + view.getTop() + " | " + view.getRight() + " | " + view.getBottom());
+        Bitmap bm = Bitmap.createBitmap(view.getRight(), view.getBottom(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bm);
         Drawable bgDrawable = view.getBackground();
         if (bgDrawable != null)
@@ -200,8 +199,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Save Error!!", Toast.LENGTH_SHORT).show();
-        } finally {
-            view.destroyDrawingCache();
         }
     }
 
@@ -214,12 +211,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_export) {
-            new AlertDialog.Builder(this).setMessage("Confirm to export file pdf!")
+            new AlertDialog.Builder(this).setMessage("Confirm to export file png!")
                     .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss())
                     .setPositiveButton("OK", (dialogInterface, i) -> {
                         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            zoomLayout.zoomTo(1, false);
-                            saveImage(zoomLayout);
+                            saveImage(rcvFamilyTree);
                         } else {
                             askPermission();
                         }

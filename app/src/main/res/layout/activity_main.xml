@@ -12,13 +12,14 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         app:hasClickableChildren="true"
-        app:maxZoom="10"
+        app:maxZoom="50"
         app:minZoom="0.2">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler"
+            android:id="@+id/rcv_family_tree"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:padding="16dp" />
 
     </com.otaliastudios.zoom.ZoomLayout>
 
