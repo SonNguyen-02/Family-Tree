@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <View
+        android:layout_width="100dp"
+        android:layout_height="1.5dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/line_offset"
+        android:background="@color/black" />
+
+    <LinearLayout
+        android:id="@+id/layout_husband"
+        android:layout_width="@dimen/max_size_node"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_avatar_husband"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:padding="4dp"
+            android:src="@drawable/test_image" />
+
+        <TextView
+            android:id="@+id/tv_name_husband"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_size_node"
+            android:padding="4dp"
+            android:text="@string/test_name"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_desc_husband"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_size_node"
+            android:padding="4dp"
+            android:text="@string/test_desc"
+            android:textAlignment="center"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_wife"
+        android:layout_width="@dimen/max_size_node"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@id/layout_husband"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_avatar_wife"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:padding="4dp"
+            android:src="@drawable/test_image" />
+
+        <TextView
+            android:id="@+id/tv_name_wife"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_size_node"
+            android:padding="4dp"
+            android:text="@string/test_name"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_desc_wife"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_size_node"
+            android:padding="4dp"
+            android:text="@string/test_desc"
+            android:textAlignment="center"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</RelativeLayout>

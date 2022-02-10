@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="max_size_node">150dp</dimen>
+    <dimen name="avatar_size">80dp</dimen>
+
+    <dimen name="line_offset">40dp</dimen>
+
+</resources>
